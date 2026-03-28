@@ -1,0 +1,29 @@
+# Ambiente virtual
+venv/
+.env
+
+# Banco de dados
+data/leads.duckdb
+
+# Dados Bronze (leads coletados — privados)
+data/bronze/
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ChromeDriver cache
+.wdm/
+
+# Streamlit
+.streamlit/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
