@@ -75,17 +75,19 @@ with st.sidebar:
 
     pagina = st.radio(
         "nav",
-        ["Coletar", "Dashboard", "Leads", "Configuracoes"],
+        ["Coletar", "Dashboard", "Leads", "Outreach", "Configuracoes"],
         format_func=lambda x: {
             "Coletar":       "⚡  Coletar Leads",
             "Dashboard":     "◈  Dashboard",
             "Leads":         "≡  Leads",
+            "Outreach":      "✉  Outreach",
             "Configuracoes": "⚙  Configuracoes",
         }[x],
         label_visibility="collapsed",
         key="nav_radio",
-        index=["Coletar", "Dashboard", "Leads", "Configuracoes"].index(
-            st.session_state.pagina_atual
+        index=["Coletar", "Dashboard", "Leads", "Outreach", "Configuracoes"].index(
+            st.session_state.pagina_atual if st.session_state.pagina_atual in
+            ["Coletar", "Dashboard", "Leads", "Outreach", "Configuracoes"] else "Coletar"
         ),
     )
     st.session_state.pagina_atual = pagina
@@ -274,6 +276,129 @@ elif pagina == "Leads":
             "text/csv", use_container_width=True)
 
 
+# ── OUTREACH
+elif pagina == "Outreach":
+    st.markdown("<h1 style='margin-bottom:4px'>✉ Outreach</h1>", unsafe_allow_html=True)
+    st.caption("Selecione os alvos, configure a mensagem e acompanhe o funil.")
+    st.divider()
+
+    df = load_leads()
+
+    if df.empty:
+        st.info("Nenhum lead no banco ainda.")
+    else:
+        pendentes   = int(((df["score_digital"] == 0) & (df["status_outreach"] == "pendente") & df["telefone"].notna() & (df["telefone"] != "")).sum())
+        contatados  = int(df["status_outreach"].str.startswith("contatado", na=False).sum())
+        responderam = int((df["status_outreach"] == "respondeu").sum())
+        fechados    = int((df["status_outreach"] == "fechado").sum())
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Alvos pendentes",  pendentes)
+        c2.metric("Contatados",       contatados)
+        c3.metric("Responderam",      responderam)
+        c4.metric("Fechados",         fechados)
+
+        st.divider()
+
+        tab1, tab2, tab3 = st.tabs(["🚀  Disparar", "📋  Acompanhar", "✏️  Atualizar Status"])
+
+        with tab1:
+            st.markdown("<div class='section-title' style='margin-top:16px;'>Selecionar Alvos</div>", unsafe_allow_html=True)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                nicho_f = st.selectbox("Filtrar por nicho", ["Todos"] + sorted(df["nicho"].dropna().unique().tolist()), key="out_nicho")
+            with col2:
+                cidade_f = st.selectbox("Filtrar por cidade", ["Todas"] + sorted(df["cidade"].dropna().unique().tolist()), key="out_cidade")
+
+            alvos = df[(df["score_digital"] == 0) & (df["status_outreach"] == "pendente") & df["telefone"].notna() & (df["telefone"] != "")].copy()
+            if nicho_f  != "Todos": alvos = alvos[alvos["nicho"]  == nicho_f]
+            if cidade_f != "Todas": alvos = alvos[alvos["cidade"] == cidade_f]
+
+            st.caption(f"{len(alvos)} alvos disponiveis")
+            if not alvos.empty:
+                cols_alvos = [c for c in ["nome","categoria","telefone","avaliacao","nicho","cidade"] if c in alvos.columns]
+                st.dataframe(alvos[cols_alvos].head(20), use_container_width=True, hide_index=True)
+
+            st.divider()
+            st.markdown("<div class='section-title'>Mensagens A/B</div>", unsafe_allow_html=True)
+
+            col1, col2 = st.columns(2)
+            with col1:
+                st.markdown("**Mensagem A — Comercial/Direta**")
+                msg_a = st.text_area("msg_a", label_visibility="collapsed", value="Oi, tudo bem? Vi seu negocio no Google Maps e percebi que voce ainda nao tem um site profissional.\n\nHoje, clientes pesquisam antes de visitar — e quem nao aparece online perde espaco para a concorrencia.\n\nTrabalho com criacao de sites profissionais para negocios locais. Posso te enviar uma proposta rapida?", height=160, key="txa")
+            with col2:
+                st.markdown("**Mensagem B — Pessoal/Indicativa**")
+                msg_b = st.text_area("msg_b", label_visibility="collapsed", value="Ola! Me foi indicado seu negocio e fui dar uma olhada no Google — vi que voce ainda nao tem um site.\n\nTenho ajudado negocios aqui da regiao a conseguir mais clientes com um site profissional simples e direto.\n\nPosso te mostrar como funcionaria no seu caso?", height=160, key="txb")
+
+            st.divider()
+            limite = st.slider("Quantidade de disparos", 5, max(5, min(50, len(alvos))) if len(alvos) > 0 else 5, min(30, max(5, len(alvos))), 5, key="out_limite")
+
+            st.markdown(f"""
+            <div style='background:#0d1117;border:1px solid #1e2530;border-radius:10px;padding:14px 18px;margin-bottom:16px;font-size:0.85rem;color:#8892a4;'>
+                <strong style='color:#fff;'>{limite}</strong> disparos —
+                <strong style='color:#3b82f6;'>{limite//2} Msg A</strong> e
+                <strong style='color:#fbbf24;'>{limite - limite//2} Msg B</strong> · Intervalo de 8s entre cada envio
+            </div>
+            """, unsafe_allow_html=True)
+
+            if st.button("Iniciar Disparo via WhatsApp", disabled=len(alvos) == 0, use_container_width=True, type="primary", key="btn_disparar"):
+                import json as _json
+                project_dir  = os.path.dirname(os.path.abspath(__file__))
+                msgs_path    = os.path.join(project_dir, "outreach", ".mensagens.json")
+                sender_path  = os.path.join(project_dir, "outreach", "whatsapp_sender.py")
+                with open(msgs_path, "w", encoding="utf-8") as f:
+                    _json.dump({"msg_a": msg_a, "msg_b": msg_b, "nicho": nicho_f, "cidade": cidade_f}, f, ensure_ascii=False)
+                with st.spinner("Abrindo WhatsApp Web... Escaneie o QR code se necessario."):
+                    result = subprocess.run(
+                        [sys.executable, sender_path, "--limite", str(limite)],
+                        capture_output=True, text=True, encoding="utf-8", errors="replace",
+                        cwd=project_dir,
+                    )
+                log_out = result.stdout + ("\n" + result.stderr if result.stderr.strip() else "")
+                st.markdown("<div class='section-title'>Log do disparo</div>", unsafe_allow_html=True)
+                st.code(log_out, language="bash")
+                if result.returncode == 0:
+                    st.success("Disparo concluido!")
+                    st.rerun()
+                else:
+                    st.error("Erro no disparo. Veja o log acima.")
+
+        with tab2:
+            st.markdown("<div class='section-title' style='margin-top:16px;'>Funil de Contatos</div>", unsafe_allow_html=True)
+            status_f = st.selectbox("Filtrar por status", ["Todos","contatado_msg_A","contatado_msg_B","respondeu","em_negociacao","fechado","perdido"], key="acomp_status")
+            acomp = df[df["status_outreach"] != "pendente"].copy()
+            if status_f != "Todos":
+                acomp = acomp[acomp["status_outreach"] == status_f]
+            if acomp.empty:
+                st.info("Nenhum contato realizado ainda.")
+            else:
+                st.caption(f"{len(acomp)} contatos")
+                cols_a = [c for c in ["nome","telefone","nicho","cidade","status_outreach"] if c in acomp.columns]
+                st.dataframe(acomp[cols_a], use_container_width=True, hide_index=True)
+
+        with tab3:
+            st.markdown("<div class='section-title' style='margin-top:16px;'>Atualizar Status Manualmente</div>", unsafe_allow_html=True)
+            st.caption("Registre respostas, negociacoes e fechamentos.")
+            contatados_df = df[df["status_outreach"] != "pendente"].copy()
+            if contatados_df.empty:
+                st.info("Nenhum lead contatado ainda.")
+            else:
+                col1, col2 = st.columns(2)
+                with col1:
+                    nome_sel = st.selectbox("Selecione o lead", contatados_df["nome"].tolist(), key="upd_nome")
+                with col2:
+                    novo_status = st.selectbox("Novo status", ["contatado_msg_A","contatado_msg_B","respondeu","em_negociacao","fechado","perdido"], key="upd_status")
+                if st.button("Atualizar", use_container_width=True, key="btn_atualizar"):
+                    lead_row = contatados_df[contatados_df["nome"] == nome_sel].iloc[0]
+                    con = get_connection()
+                    con.execute("UPDATE leads SET status_outreach = ? WHERE id = ?", [novo_status, int(lead_row["id"])])
+                    con.close()
+                    st.success(f"'{nome_sel}' atualizado para '{novo_status}'!")
+                    time.sleep(1)
+                    st.rerun()
+
+
 # ── CONFIGURACOES
 elif pagina == "Configuracoes":
     st.markdown("<h1 style='margin-bottom:4px'>⚙ Configuracoes</h1>", unsafe_allow_html=True)
@@ -302,186 +427,3 @@ elif pagina == "Configuracoes":
         st.success("Banco resetado!")
         time.sleep(1)
         st.rerun()
-
-# ── Page config
-st.set_page_config(
-    page_title="LeadLakehouse",
-    page_icon="⚡",
-    layout="wide",
-    initial_sidebar_state="expanded",
-)
-
-# ── Google Fonts + CSS
-st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-    /* Base */
-    html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-    .stApp { background: #080c14; }
-
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background: #0d1117;
-        border-right: 1px solid #1e2530;
-    }
-    [data-testid="stSidebar"] * { color: #8892a4 !important; }
-    [data-testid="stSidebar"] .stRadio label:hover { color: #fff !important; }
-
-    /* Headings */
-    h1, h2, h3 { font-family: 'Syne', sans-serif !important; color: #fff !important; }
-
-    /* Metric cards */
-    [data-testid="stMetric"] {
-        background: #0d1117;
-        border: 1px solid #1e2530;
-        border-radius: 12px;
-        padding: 20px 24px;
-    }
-    [data-testid="stMetricLabel"] { color: #5a6478 !important; font-size: 0.78rem !important; letter-spacing: 0.08em; text-transform: uppercase; }
-    [data-testid="stMetricValue"] { color: #fff !important; font-family: 'Syne', sans-serif !important; font-size: 2rem !important; }
-    [data-testid="stMetricDelta"] { font-size: 0.8rem !important; }
-
-    /* Inputs */
-    .stTextInput input, .stSelectbox select {
-        background: #0d1117 !important;
-        border: 1px solid #1e2530 !important;
-        border-radius: 8px !important;
-        color: #e2e8f0 !important;
-    }
-    .stTextInput input:focus { border-color: #3b82f6 !important; }
-
-    /* Buttons */
-    .stButton > button {
-        background: #3b82f6 !important;
-        color: #fff !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-family: 'Syne', sans-serif !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.04em !important;
-        padding: 0.6rem 1.4rem !important;
-        transition: all 0.2s !important;
-    }
-    .stButton > button:hover { background: #2563eb !important; transform: translateY(-1px); }
-    .stButton > button:disabled { background: #1e2530 !important; color: #3a4556 !important; }
-
-    /* Dataframe */
-    [data-testid="stDataFrame"] { border: 1px solid #1e2530; border-radius: 10px; overflow: hidden; }
-
-    /* Code block (log) */
-    .stCode { background: #0a0e17 !important; border: 1px solid #1e2530 !important; border-radius: 10px !important; font-size: 0.78rem !important; }
-
-    /* Divider */
-    hr { border-color: #1e2530 !important; }
-
-    /* Alert / info */
-    .stAlert { border-radius: 10px !important; }
-
-    /* Progress bar */
-    .stProgress > div > div { background: #3b82f6 !important; }
-
-    /* Slider */
-    .stSlider [data-baseweb="slider"] { padding: 0 !important; }
-
-    /* Caption */
-    .stCaption { color: #5a6478 !important; }
-
-    /* Badge helper */
-    .badge {
-        display: inline-block;
-        padding: 2px 10px;
-        border-radius: 20px;
-        font-size: 0.72rem;
-        font-weight: 600;
-    }
-    .badge-red    { background: #2d1515; color: #f87171; border: 1px solid #7f1d1d; }
-    .badge-yellow { background: #2d2515; color: #fbbf24; border: 1px solid #78350f; }
-    .badge-green  { background: #152d1e; color: #34d399; border: 1px solid #064e3b; }
-    .badge-gray   { background: #1a2030; color: #94a3b8; border: 1px solid #334155; }
-
-    /* Section title */
-    .section-title {
-        font-family: 'Syne', sans-serif;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #3b82f6;
-        margin-bottom: 12px;
-    }
-
-    /* Stat number large */
-    .stat-big {
-        font-family: 'Syne', sans-serif;
-        font-size: 3.5rem;
-        font-weight: 800;
-        color: #fff;
-        line-height: 1;
-    }
-    .stat-label {
-        font-size: 0.8rem;
-        color: #5a6478;
-        margin-top: 6px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# ── Init
-init_db()
-
-# ── Shared state para thread (session_state nao funciona em threads)
-_log_buffer     = []
-_coleta_pronta  = [False]
-_coleta_rodando = [False]
-
-
-def add_log(msg: str):
-    ts = datetime.now().strftime("%H:%M:%S")
-    _log_buffer.append(f"[{ts}] {msg}")
-
-
-def run_coleta(query: str, max_leads: int):
-    """Roda o scraper + pipeline via subprocess."""
-    import subprocess
-
-    project_dir   = os.path.dirname(os.path.abspath(__file__))
-    scraper_path  = os.path.join(project_dir, "scraper", "google_maps_scraper.py")
-    pipeline_path = os.path.join(project_dir, "pipelines", "bronze_pipeline.py")
-
-    try:
-        add_log(f"Iniciando coleta: '{query}' | max: {max_leads}")
-
-        result = subprocess.run(
-            [sys.executable, scraper_path, "--query", query, "--max", str(max_leads)],
-            capture_output=True, text=True, encoding="utf-8", errors="replace",
-            cwd=project_dir,
-        )
-        for line in result.stdout.splitlines():
-            if line.strip():
-                add_log(line)
-        if result.returncode != 0:
-            for line in result.stderr.splitlines():
-                if line.strip():
-                    add_log(f"ERRO: {line}")
-            _coleta_rodando[0] = False
-            return
-
-        add_log("Rodando pipeline Bronze -> DB...")
-        result2 = subprocess.run(
-            [sys.executable, pipeline_path],
-            capture_output=True, text=True, encoding="utf-8", errors="replace",
-            cwd=project_dir,
-        )
-        for line in result2.stdout.splitlines():
-            if line.strip():
-                add_log(line)
-
-        add_log("Coleta finalizada!")
-        _coleta_pronta[0]  = True
-        _coleta_rodando[0] = False
-
-    except Exception as e:
-        add_log(f"ERRO: {e}")
-        _coleta_rodando[0] = False
