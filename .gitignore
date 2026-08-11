@@ -36,3 +36,5 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+# Dados de prospects recebidos (nome/telefone/email) — LGPD, nunca commitar
+dados-recebidos/
