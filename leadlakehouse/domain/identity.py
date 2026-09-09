@@ -86,7 +86,9 @@ def chave_identidade(b: Business) -> str:
     if nome:
         return f"nome:{nome}"
 
-    # último recurso: hash do payload cru p/ não colidir tudo em uma chave
+    # Último recurso: hash do payload cru p/ não colidir tudo em uma chave.
+    # ATENÇÃO: hash() de string é aleatorizado por processo, então esta chave NÃO é estável
+    # entre execuções — o mesmo negócio pode virar duas linhas. Ver docs/ARQUITETURA.md, seção 18.
     return f"anon:{hash(repr(sorted(b.raw.items()))) & 0xFFFFFFFF:08x}"
 
 

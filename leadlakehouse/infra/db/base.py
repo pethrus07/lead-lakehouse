@@ -16,6 +16,8 @@ def criar_engine(url: str | None = None, echo: bool = False):
     return create_engine(url or settings.database_url, echo=echo, pool_pre_ping=True)
 
 
+# O engine nasce na importação do módulo, mas o SQLAlchemy só abre conexão no primeiro uso:
+# por isso importar isto sem Postgres de pé não explode. URL malformada, essa sim, estoura aqui.
 engine = criar_engine()
 Session = sessionmaker(bind=engine, expire_on_commit=False)
 

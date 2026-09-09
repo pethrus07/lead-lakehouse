@@ -1,3 +1,9 @@
+"""Testa a derivação de sinais e a pontuação por ICP.
+
+A data de referência é fixa (`REF`) de propósito: o sinal `negocio_novo` depende de "hoje", e
+teste que depende do calendário passa a falhar sozinho meses depois.
+"""
+
 from datetime import date
 
 from leadlakehouse.domain.icp import ICP, PesosOportunidade

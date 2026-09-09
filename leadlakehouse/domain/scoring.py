@@ -60,7 +60,8 @@ def pontuar(b: Business, icp: ICP, ref: date | None = None) -> Score:
     """Combina sinais derivados + coletados (enriquecimento) e aplica os pesos do ICP."""
     derivados = derivar_sinais(b, ref)
 
-    # dedup por tipo (Sinal.__eq__/__hash__ usam só o tipo); coletados têm prioridade
+    # Um sinal por tipo. Os coletados no enriquecimento entram depois dos derivados e
+    # sobrescrevem: medido vence deduzido.
     por_tipo: dict[TipoSinal, Sinal] = {}
     for s in derivados + list(b.sinais):
         por_tipo[s.tipo] = s

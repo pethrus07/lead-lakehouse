@@ -1,3 +1,10 @@
+"""Testa o cliente do zapagente contra um servidor falso (`httpx.MockTransport`).
+
+O `transport` injetável do cliente existe para isto: o fluxo inteiro — login, upsert de
+contato, criação e aplicação de tag — é exercido sem rede, e o handler falso confere o que foi
+enviado (telefone só com dígitos, Bearer no cabeçalho, tag criada uma vez só).
+"""
+
 import json
 
 # Asserções com JSON/URLs inline ficam naturalmente longas.

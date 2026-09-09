@@ -1,3 +1,10 @@
+"""Testa a resolução de identidade: normalização, chave canônica, mescla e dedup.
+
+É o núcleo do multi-fonte — se isto quebrar, o mesmo negócio vira dois leads. O último teste
+cobre o motivo de o dedup usar blocking multi-chave: o registro do Maps e o da Receita têm
+nomes diferentes e colapsam pelo telefone em comum.
+"""
+
 from leadlakehouse.domain.identity import (
     bucket_geo,
     chave_identidade,

@@ -9,6 +9,8 @@ from ..config import settings
 from ..domain.models import Fonte
 from . import registry
 
+# Guarda de idempotência: a CLI e a UI podem chamar isto mais de uma vez no mesmo processo,
+# e registrar de novo trocaria as instâncias que já estão em uso.
 _carregado = False
 
 

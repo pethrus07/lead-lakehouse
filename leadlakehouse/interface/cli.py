@@ -11,6 +11,9 @@ from .. import __version__
 
 app = typer.Typer(help="lead-lakehouse — motor de prospecção multi-fonte", no_args_is_help=True)
 
+# Cada comando importa o que precisa DENTRO da própria função: é isso que faz `llh versao` e
+# `llh fontes` responderem sem exigir Postgres, Playwright ou pandas instalados.
+
 
 @app.command()
 def versao() -> None:
