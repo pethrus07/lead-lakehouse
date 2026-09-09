@@ -1,3 +1,10 @@
+"""Testa o mapeamento de cada fonte para `Business`, sem rede e sem browser.
+
+A parte frágil (o DOM do Maps, o HTTP do Overpass) fica de fora; o que se testa é a tradução
+do dado bruto, que é onde erro silencioso costuma nascer, mais a montagem da query Overpass
+nas suas duas formas — por área administrativa e por raio.
+"""
+
 from leadlakehouse.domain.icp import ICP, Regiao
 from leadlakehouse.domain.models import Fonte
 from leadlakehouse.sources.google_maps import raw_para_business

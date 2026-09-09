@@ -50,6 +50,8 @@ async def coletar(icp: ICP) -> list[Business]:
                 coletados.append(b)
         except Exception as e:  # noqa: BLE001
             log.error("erro_fonte", fonte=str(fonte), erro=str(e))
+        # O bronze é gravado por fonte e ANTES do dedup: é o registro do que a fonte devolveu,
+        # a única forma de auditar depois se o problema foi a coleta ou a fusão.
         if coletados:
             caminho = salvar_bronze(coletados, fonte, query=" ".join(icp.nicho))
             log.info("fonte_coletou", fonte=str(fonte), n=len(coletados), bronze=caminho)

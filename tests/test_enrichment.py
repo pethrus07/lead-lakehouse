@@ -1,3 +1,9 @@
+"""Testa as funções puras do enriquecimento, sem rede.
+
+`analisar_html` e `aplicar_cnpj` foram separadas do I/O exatamente para caberem aqui: o que
+sobra nos enriquecedores é só a chamada HTTP, que não se testa de graça.
+"""
+
 from datetime import date
 
 from leadlakehouse.domain.models import Business, Fonte, TipoSinal

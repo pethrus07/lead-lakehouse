@@ -26,6 +26,8 @@ def analisar_html(html: str, sem_ssl: bool, elapsed: float | None) -> tuple[list
 
     if sem_ssl:
         sinais.append(Sinal(tipo=TipoSinal.SITE_SEM_SSL, fonte=Fonte.SITE))
+    # Heurística barata: sem a meta viewport, o site é de antes do mobile. Site que monta o
+    # conteúdo por JavaScript vira falso positivo aqui — isto é httpx, não browser.
     if "viewport" not in html.lower():
         sinais.append(Sinal(tipo=TipoSinal.SITE_NAO_RESPONSIVO, fonte=Fonte.SITE))
     if elapsed is not None and elapsed > LIMITE_LENTO_S:

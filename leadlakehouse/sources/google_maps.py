@@ -110,6 +110,7 @@ class GoogleMapsSource:
                         yield raw_para_business(raw)
                         restante -= 1
                     except Exception:
+                        # Ficha que não abre ou mudou de layout não derruba a coleta inteira.
                         pass
                     await atraso()
 

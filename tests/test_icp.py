@@ -1,3 +1,10 @@
+"""Testa os gates duros do ICP (`Filtros.aprova`).
+
+O caso que mais importa é a convenção da casa: filtro numérico sobre dado que o negócio não
+tem **passa**, em vez de descartar. Falta de informação não é evidência contrária — quem
+cuida do ranking é a pontuação.
+"""
+
 from datetime import date
 
 from leadlakehouse.domain.icp import Filtros
