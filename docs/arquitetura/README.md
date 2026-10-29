@@ -11,7 +11,17 @@ cada uma numa notação padrão:
 
 Acha negócios que precisam do que se vende, pontua cada um pelo perfil de cliente ideal e entrega os leads para o Commagente conversar e fechar. Nasceu como pitch para o Sebrae; motor pronto e em espera por escolha.
 
-![FARO · motor de prospecção multi-fonte](./faro.svg)
+### Quem usa e para quê (UML)
+
+![Casos de uso · FARO · motor de prospecção multi-fonte](./faro-1-casos-de-uso.svg)
+
+### Do nicho escolhido aos leads no Commagente (BPMN 2.0)
+
+![Processo · FARO · motor de prospecção multi-fonte](./faro-2-processo.svg)
+
+### Arquitetura (C4, containers)
+
+![Arquitetura · FARO · motor de prospecção multi-fonte](./faro-3-arquitetura.svg)
 
 Editável: [`faro.excalidraw`](./faro.excalidraw), abre em [excalidraw.com](https://excalidraw.com) ou no VS Code com a extensão Excalidraw.
 
