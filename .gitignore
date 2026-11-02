@@ -1,12 +1,21 @@
 # Ambiente virtual
 venv/
+.venv/
 .env
 
 # Banco de dados
 data/leads.duckdb
+data/*.duckdb
 
-# Dados Bronze (leads coletados — privados)
+# Dados Bronze (leads coletados — privados / LGPD)
 data/bronze/
+data/
+
+# Playwright
+.playwright/
+
+# uv
+.uv/
 
 # Cache Python
 __pycache__/
@@ -27,3 +36,5 @@ __pycache__/
 # OS
 .DS_Store
 Thumbs.db
+# Dados de prospects recebidos (nome/telefone/email) — LGPD, nunca commitar
+dados-recebidos/
