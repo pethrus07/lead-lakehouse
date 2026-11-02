@@ -103,4 +103,4 @@ Fora do git: `.env`, `data/` (coleta bruta), `dados-recebidos/` (listas recebida
 
 ## Licença
 
-Todos os direitos reservados.
+MIT. Veja [LICENSE](LICENSE).

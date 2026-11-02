@@ -103,4 +103,4 @@ Kept out of git: `.env`, `data/` (raw collection), `dados-recebidos/` (received 
 
 ## License
 
-All rights reserved.
+MIT. See [LICENSE](LICENSE).
