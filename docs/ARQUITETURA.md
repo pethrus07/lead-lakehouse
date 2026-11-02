@@ -9,7 +9,8 @@
 > 25/07/2026, e ele descreve coisas que **não existem no código** — a seção 17 aqui lista quais.
 > Este documento fala só do que está escrito nos arquivos hoje, medido arquivo por arquivo.
 >
-> Branch de trabalho: `refactor/v1-multi-fonte`. A `main` ainda tem a v0.6 (Selenium + DuckDB).
+> Desde 01/11/2026 a v1 está no `main` (merge do branch `refactor/v1-multi-fonte`). A v0.6
+> (Selenium + DuckDB + disparo de WhatsApp) só existe no histórico.
 
 ---
 

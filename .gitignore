@@ -2,6 +2,8 @@
 venv/
 .venv/
 .env
+.env.*
+!.env.example
 
 # Banco de dados
 data/leads.duckdb
@@ -38,3 +40,7 @@ __pycache__/
 Thumbs.db
 # Dados de prospects recebidos (nome/telefone/email) — LGPD, nunca commitar
 dados-recebidos/
+
+# Caches de teste e lint
+.pytest_cache/
+.ruff_cache/
