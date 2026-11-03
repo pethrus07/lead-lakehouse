@@ -21,7 +21,7 @@ A small business that sells a service (websites, social media, software) does no
 prospecting. Bought lists are stale, and searching the map one by one takes the whole day. FARO answers "who,
 in this region and this niche, needs what I sell the most?", with the reason behind each score.
 
-## How it works
+## What it does
 
 ```
 SOURCES (several)  ->  DEDUP / identity  ->  ENRICHMENT  ->  ICP SCORE  ->  LEADS
@@ -45,7 +45,7 @@ SOURCES (several)  ->  DEDUP / identity  ->  ENRICHMENT  ->  ICP SCORE  ->  LEAD
 Python 3.12 with uv, Pydantic v2, SQLAlchemy 2 + Postgres 16 (Docker), httpx, Typer (`llh` CLI), Playwright
 (optional, for Google Maps), Streamlit (optional, UI), pytest and ruff.
 
-## Running locally
+## Run locally
 
 Requirements: uv and Docker.
 
@@ -67,7 +67,7 @@ For Google Maps and the UI: `uv sync --extra scraping --extra ui` and `uv run pl
 uv run pytest        # 33 tests, under 1 s, no network and no database
 ```
 
-## Layout
+## Folders
 
 ```
 leadlakehouse/

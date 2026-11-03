@@ -21,7 +21,7 @@ Pequeno negócio que vende serviço (site, social media, sistema) não sabe por 
 Listas compradas são velhas, e procurar um por um no mapa toma o dia. O FARO responde "quem, nesta região e
 neste nicho, mais precisa do que eu vendo?", com o motivo de cada nota.
 
-## Como funciona
+## O que faz
 
 ```
 FONTES (várias)  ->  DEDUP / identidade  ->  ENRIQUECIMENTO  ->  NOTA por ICP  ->  LEADS
@@ -66,7 +66,7 @@ Para o Google Maps e a interface: `uv sync --extra scraping --extra ui` e `uv ru
 uv run pytest        # 33 testes, menos de 1 s, sem rede e sem banco
 ```
 
-## Estrutura
+## Pastas
 
 ```
 leadlakehouse/
